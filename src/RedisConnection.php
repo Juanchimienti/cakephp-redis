@@ -101,6 +101,16 @@ class RedisConnection implements ConnectionInterface, DriverInterface
     }
 
     /**
+     * Gets the driver instance.
+     *
+     * @return \Cake\Database\Driver
+     */
+    public function getDriver(string $role = self::ROLE_WRITE): \Cake\Database\Driver
+    {
+        return  $this->_driver;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function config(): array
