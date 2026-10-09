@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Cake\Redis;
 
 use Cake\Redis\Driver\PHPRedisDriver;
+use Cake\Redis\Driver\PHPRedisClusterDriver;
 use Cake\Redis\Driver\PredisDriver;
 use Cake\Datasource\ConnectionInterface;
 use Cake\Core\App;
@@ -81,7 +82,11 @@ class RedisConnection implements ConnectionInterface, DriverInterface
 
         if (is_string($driver)) {
             if ($driver === 'phpredis') {
-                $driver = PHPRedisDriver::class;
+                $driver = !empty($config['cluster']) ? PHPRedisClusterDriver::class : PHPRedisDriver::class;
+            }
+
+            if ($driver === 'phpredis-cluster') {
+                $driver = PHPRedisClusterDriver::class;
             }
 
             if ($driver === 'predis') {

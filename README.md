@@ -69,6 +69,44 @@ echo $redis->get('cakephp'); // Returns 'awesome'
 
 Make sure you take a look at all the commands you can run in the [PHPRedis Readme](https://github.com/phpredis/phpredis/blob/develop/README.markdown).
 
+## Connecting to a Redis Cluster
+
+Both drivers support Redis Cluster mode. Set `cluster` to `true` and provide the list of seed
+nodes under `servers` (as `"host:port"` strings) instead of a single `host`/`port`:
+
+```php
+    'Datasources' => [
+        ...
+        'redisCluster' => [
+            'className' => 'Cake\Redis\RedisConnection',
+            'driver' => 'phpredis', // or 'predis'
+            'cluster' => true,
+            'servers' => [
+                '127.0.0.1:7000',
+                '127.0.0.1:7001',
+                '127.0.0.1:7002',
+            ],
+            'timeout' => [optional],
+            'readTimeout' => [optional], // phpredis only
+            'persistent' => [optional],
+            'auth' => [optional], // password, or [user, pass] for ACL (phpredis only)
+            'options' => [], // extra options for the driver
+        ]
+    ]
+```
+
+With the `phpredis` driver, cluster mode is backed by `RedisCluster` instead of `Redis`
+internally (`Cake\Redis\Driver\PHPRedisClusterDriver`), since phpredis exposes them as two
+distinct client classes. You can also select it explicitly with
+`'driver' => 'phpredis-cluster'`. The `database` option is not supported in cluster mode
+(Redis Cluster only has database 0).
+
+Note that `transactional()` relies on `MULTI`/`EXEC`, which Redis Cluster only allows when every
+key touched by the transaction hashes to the same slot. Use [hash
+tags](https://redis.io/docs/reference/cluster-spec/#hash-tags) (e.g. `{user:1}:name`,
+`{user:1}:email`) to force related keys onto the same node when running transactions against a
+cluster.
+
 ## Executing a list of commands in a transaction
 
 ```php

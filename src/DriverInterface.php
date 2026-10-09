@@ -140,6 +140,7 @@ namespace Cake\Redis;
  * @method mixed  bgrewriteaof()
  * @method mixed  bgsave()
  * @method mixed  client($subcommand, $argument = null)
+ * @method mixed  cluster($subcommand, ...$args)
  * @method mixed  config($subcommand, $argument = null)
  * @method int    dbsize()
  * @method mixed  flushall()

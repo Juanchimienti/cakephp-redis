@@ -23,7 +23,30 @@ class PredisDriver extends Client implements DriverInterface
             'timeout' => null,
             'database' => 0,
             'options' => [],
+            'cluster' => false,
+            'servers' => [],
         ];
+
+        if (!empty($config['cluster'])) {
+            if (empty($config['servers'])) {
+                throw new \RuntimeException('You must provide a list of `servers` to connect to a redis cluster.');
+            }
+
+            $parameters = array_map(function ($server) use ($config) {
+                if (is_string($server)) {
+                    [$host, $port] = explode(':', $server, 2);
+                    $server = ['scheme' => $config['scheme'], 'host' => $host, 'port' => (int)$port];
+                }
+
+                return $server;
+            }, $config['servers']);
+
+            $options = $config['options'] + ['cluster' => 'redis'];
+
+            parent::__construct($parameters, $options);
+
+            return;
+        }
 
         parent::__construct($config, $config['options']);
     }
