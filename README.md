@@ -107,6 +107,20 @@ tags](https://redis.io/docs/reference/cluster-spec/#hash-tags) (e.g. `{user:1}:n
 `{user:1}:email`) to force related keys onto the same node when running transactions against a
 cluster.
 
+### TLS
+
+Prefix each seed in `servers` with `tls://` (e.g. `'tls://127.0.0.1:7000'`) to connect over TLS.
+
+With the `phpredis` driver, also pass a `context` array with any SSL stream options (`verify_peer`,
+`cafile`, etc. - see `Redis::connect()`'s `context` option), which is forwarded as-is to
+`RedisCluster`'s constructor (requires phpredis >= 5.3.0). Also set an explicit `timeout` and
+`readTimeout` when using TLS: both default to `0`, which phpredis treats as "block forever" - a
+stalled or misconfigured TLS handshake (wrong port, missing/incompatible `context`) will hang
+indefinitely instead of failing fast.
+
+With the `predis` driver, TLS options go in `options` as documented by
+[Predis](https://github.com/predis/predis), e.g. `'options' => ['parameters' => ['ssl' => [...]]]`.
+
 ## Executing a list of commands in a transaction
 
 ```php

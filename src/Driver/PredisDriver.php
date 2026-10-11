@@ -34,8 +34,15 @@ class PredisDriver extends Client implements DriverInterface
 
             $parameters = array_map(function ($server) use ($config) {
                 if (is_string($server)) {
+                    $scheme = $config['scheme'];
+                    // Allow seeds like `tls://host:port` to override the default scheme,
+                    // instead of being mangled by exploding on the scheme's own `:`.
+                    if (preg_match('#^([a-z][a-z0-9+.-]*)://(.+)$#i', $server, $matches)) {
+                        $scheme = $matches[1];
+                        $server = $matches[2];
+                    }
                     [$host, $port] = explode(':', $server, 2);
-                    $server = ['scheme' => $config['scheme'], 'host' => $host, 'port' => (int)$port];
+                    $server = ['scheme' => $scheme, 'host' => $host, 'port' => (int)$port];
                 }
 
                 return $server;

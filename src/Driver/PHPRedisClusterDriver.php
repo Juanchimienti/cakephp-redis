@@ -23,6 +23,7 @@ class PHPRedisClusterDriver extends RedisCluster implements DriverInterface
             'readTimeout' => 0,
             'persistent' => false,
             'auth' => null,
+            'context' => null,
             'options' => [],
         ];
 
@@ -30,14 +31,32 @@ class PHPRedisClusterDriver extends RedisCluster implements DriverInterface
             throw new \RuntimeException('You must provide a list of `servers` to connect to a redis cluster.');
         }
 
-        parent::__construct(
-            $config['name'],
-            $config['servers'],
-            (float)$config['timeout'],
-            (float)$config['readTimeout'],
-            (bool)$config['persistent'],
-            $config['auth']
-        );
+        // The `context` (SSL stream options) param was added in phpredis 5.3.0; only pass it
+        // when set so older versions of the extension still work with the 6-arg constructor.
+        // Seeds using a `tls://host:port` form without a `context` (and the default
+        // `timeout`/`readTimeout` of 0, meaning "block forever") can hang indefinitely on a
+        // stalled TLS handshake instead of failing fast - set `context`, `timeout` and
+        // `readTimeout` explicitly when connecting over TLS.
+        if ($config['context'] !== null) {
+            parent::__construct(
+                $config['name'],
+                $config['servers'],
+                (float)$config['timeout'],
+                (float)$config['readTimeout'],
+                (bool)$config['persistent'],
+                $config['auth'],
+                $config['context']
+            );
+        } else {
+            parent::__construct(
+                $config['name'],
+                $config['servers'],
+                (float)$config['timeout'],
+                (float)$config['readTimeout'],
+                (bool)$config['persistent'],
+                $config['auth']
+            );
+        }
 
         foreach ($config['options'] as $option => $value) {
             $this->setOption($option, $value);
